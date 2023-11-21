@@ -2,8 +2,8 @@ import {
     createBrowserRouter,
     redirect,
 } from "react-router-dom";
-import { Login } from "./views/Login";
-import { Register } from "./views/Register";
+import { Login } from "../views/auth/Login";
+import { Register } from "../views/auth/Register";
 const router = createBrowserRouter([
     {
         loader: () => {
