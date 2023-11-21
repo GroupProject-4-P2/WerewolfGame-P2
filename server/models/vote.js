@@ -11,6 +11,8 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      Vote.belongsTo(models.Player)
+      Vote.belongsTo(models.Room)
     }
   }
   Vote.init({

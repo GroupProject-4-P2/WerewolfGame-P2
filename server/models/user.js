@@ -10,13 +10,53 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      User.hasMany(models.Room)
+      User.hasMany(models.Player)
     }
   }
   User.init({
-    name: DataTypes.STRING,
-    email: DataTypes.STRING,
-    password: DataTypes.STRING
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: `Name is Required`
+        }, 
+        notEmpty: {
+          msg: `Name is Required`
+        }
+      }
+    },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: {
+        msg: `Email is already registered`
+      },
+      validate: {
+        notNull: {
+          msg: `Email is Required`
+        }, 
+        notEmpty: {
+          msg: `Email is Required`
+        },
+        isEmail: {
+          msg: `Email Must be Email Format`
+        }
+      }
+    },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: `Password is Required`
+        }, 
+        notEmpty: {
+          msg: `Password is Required`
+        }
+      }
+    }
   }, {
     sequelize,
     modelName: 'User',

@@ -10,7 +10,10 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      Player.hasMany(models.Vote)
+      Player.belongsTo(models.Room)
+      Player.belongsTo(models.Role)
+      Player.belongsTo(models.User)
     }
   }
   Player.init({
