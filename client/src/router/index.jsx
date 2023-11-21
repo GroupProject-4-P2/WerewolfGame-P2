@@ -4,6 +4,7 @@ import {
 } from "react-router-dom";
 import { Login } from "../views/auth/Login";
 import { Register } from "../views/auth/Register";
+import { Lobby } from "../views/lobby/Lobby";
 const router = createBrowserRouter([
     {
         loader: () => {
@@ -13,19 +14,31 @@ const router = createBrowserRouter([
             }
             return null
         },
-        path: "/login",
-        element: <Login />
+        children: [
+            {
+                path: "/login",
+                element: <Login />,
+            },
+            {
+                path: "/register",
+                element: <Register />,
+            },
+        ],
     },
     {
         loader: () => {
             const access_token = localStorage.getItem(`access_token`)
-            if (access_token) {
-                throw redirect(`/loby`)
+            if (!access_token) {
+                throw redirect(`/login`)
             }
             return null
         },
-        path: "/register",
-        element: <Register />
+        children: [
+            {
+                path: "/",
+                element: <Lobby />,
+            },
+        ],
     },
 ]);
 

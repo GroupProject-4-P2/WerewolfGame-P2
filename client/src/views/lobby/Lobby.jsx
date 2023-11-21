@@ -26,7 +26,7 @@ export const Lobby = () => {
                                     <div className="mb-6 font-bold text-xl text-white">Welcome!</div>
                                 </div>
                                 <div className="row-span-2  rounded-2xl flex items-center justify-center">
-                                    <img src="https://static.vecteezy.com/system/resources/previews/011/490/381/original/happy-smiling-young-man-avatar-3d-portrait-of-a-man-cartoon-character-people-illustration-isolated-on-white-background-vector.jpg" className="rounded-full w-28 h-28 shadow-lg" alt="" srcset="" />
+                                    <img src="https://static.vecteezy.com/system/resources/previews/011/490/381/original/happy-smiling-young-man-avatar-3d-portrait-of-a-man-cartoon-character-people-illustration-isolated-on-white-background-vector.jpg" className="rounded-full w-28 h-28 shadow-lg" alt="" srcSet="" />
                                 </div>
                                 <div className="row-span-2 rounded-2xl flex items-center justify-center mt-2">
                                     <div className="flex flex-col h-full content-center">
@@ -38,10 +38,10 @@ export const Lobby = () => {
                                         </div>
                                         <div className="flex flex-row h-full content-center justify-center gap-4 my-3 bg-slate-50 pt-1 rounded-xl">
                                             <div className=" rounded-full flex justify-center h-6">
-                                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Facebook_f_logo_%282019%29.svg/2048px-Facebook_f_logo_%282019%29.svg.png" alt="" srcset="" className="shadow-2xl" />
+                                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Facebook_f_logo_%282019%29.svg/2048px-Facebook_f_logo_%282019%29.svg.png" alt="" srcSet="" className="shadow-2xl" />
                                             </div>
                                             <div className=" rounded-full flex justify-center h-6">
-                                                <img src="https://cdn-icons-png.flaticon.com/512/25/25231.png" alt="" srcset="" className="shadow-2xl" />
+                                                <img src="https://cdn-icons-png.flaticon.com/512/25/25231.png" alt="" srcSet="" className="shadow-2xl" />
                                             </div>
 
                                         </div>
