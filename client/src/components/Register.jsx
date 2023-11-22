@@ -1,16 +1,19 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react"
 import axios from "axios"
+import Swal from 'sweetalert2'
 
 export const Register = () => {
     const navigate = useNavigate();
+    const handleLogin = () => {
+        navigate('/login')
+    }
     const [userData, setUserData] = useState({
         name: '',
         email: '',
         password: ''
     });
 
-    const [error, setError] = useState("")
 
     const handleInputChange = (e) => {
         setUserData({
@@ -24,59 +27,41 @@ export const Register = () => {
             await axios.post('http://localhost:3000/register', userData)
             navigate(`/login`)
         } catch (error) {
-            if (error.response.data) {
-                setError(error.response.data.message)
-            } else {
-                setError(`cari errornya bro, ganbate`)
+            let errorMessage
+            if (error.response && error.response.data && error.response.data.message) {
+                errorMessage = error.response.data.message;
             }
+            Swal.fire({
+                icon: 'error',
+                title: 'Register Fail',
+                text: errorMessage,
+            });
         }
     }
 
     return (
-        <section className="vh-100 bg-image"
-            style={{ backgroundimage: "url('https://mdbcdn.b-cdn.net/img/Photos/new-templates/search-box/img4.webp')" }}>
-            <div className="mask d-flex align-items-center h-100 gradient-custom-3">
-                <div className="container h-100">
-                    <div className="row d-flex justify-content-center align-items-center h-100">
-                        <div className="col-12 col-md-9 col-lg-7 col-xl-6">
-                            <div className="pub-button">
-                            </div>
-                            <div className="card" style={{ borderradius: "15px" }}>
-                                <div className="card-body p-5">
-                                    <h2 className="text-uppercase text-center mb-5">Create an account</h2>
-
-                                    <form>
-                                        {error && <div className="alert alert-danger" role="alert">{error}</div>}
-                                        <div className="form-outline mb-4">
-                                            <label className="form-label" htmlFor="form3Example1cg">Name</label>
-                                            <input type="text" id="form3Example1cg" className="form-control form-control-lg" name="name" value={userData.username} onChange={handleInputChange} />
-                                        </div>
-
-                                        <div className="form-outline mb-4">
-                                            <label className="form-label" htmlFor="form3Example3cg">Email</label>
-                                            <input type="email" id="form3Example3cg" className="form-control form-control-lg" name="email" value={userData.email} onChange={handleInputChange} />
-                                        </div>
-
-                                        <div className="form-outline mb-4">
-                                            <label className="form-label" htmlFor="form3Example4cg">Password</label>
-                                            <input type="password" id="form3Example4cg" className="form-control form-control-lg" name="password" value={userData.password} onChange={handleInputChange} />
-                                        </div>
-
-                                        <div className="d-flex justify-content-center">
-                                            <button type="button" className="btn btn-success btn-block btn-lg gradient-custom-4 text-body" onClick={handleCreateUser}>Register</button>
-                                        </div>
-
-                                        <p className="text-center text-muted mt-5 mb-0">Have already an account? <Link to="/login"
-                                            className="fw-bold text-body"><u>Login here</u></Link></p>
-
-                                    </form>
-
-                                </div>
-                            </div>
-                        </div>
+        <div className="h-screen bg-indigo-100 flex justify-center items-center">
+            <div className="lg:w-2/5 md:w-1/2 w-2/3">
+                <form className="bg-white p-10 rounded-lg shadow-lg min-w-full">
+                    <h1 className="text-center text-2xl mb-6 text-gray-600 font-bold font-sans">Register to Create Account</h1>
+                    <div>
+                        <label className="text-gray-800 font-semibold block my-3 text-md" htmlFor="name">Name</label>
+                        <input className="w-full bg-gray-100 px-4 py-2 rounded-lg focus:outline-none" type="text" name="name" id="name" placeholder="name" value={userData.name} onChange={handleInputChange} />
                     </div>
-                </div>
+                    <div>
+                        <label className="text-gray-800 font-semibold block my-3 text-md" htmlFor="email">Email</label>
+                        <input className="w-full bg-gray-100 px-4 py-2 rounded-lg focus:outline-none" type="text" name="email" id="email" placeholder="email" value={userData.email} onChange={handleInputChange} />
+                    </div>
+                    <div>
+                        <label className="text-gray-800 font-semibold block my-3 text-md" htmlFor="password">Password</label>
+                        <input className="w-full bg-gray-100 px-4 py-2 rounded-lg focus:outline-none" type="password" name="password" id="password" placeholder="password" value={userData.password} onChange={handleInputChange} />
+                    </div>
+
+                    <button type="submit" className="w-full mt-6 bg-indigo-600 rounded-lg px-4 py-2 text-lg text-white tracking-wide font-semibold font-sans" onClick={handleCreateUser}>Register</button>
+                    <button type="submit" className="w-full mt-6 mb-3 bg-indigo-100 rounded-lg px-4 py-2 text-lg text-gray-800 tracking-wide font-semibold font-sans" onClick={handleLogin}>Login</button>
+
+                </form>
             </div>
-        </section>
+        </div>
     )
 }
