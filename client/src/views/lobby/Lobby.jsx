@@ -2,11 +2,15 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom"
 import axios from 'axios'
 import { io } from "socket.io-client";
+import Swal from "sweetalert2";
 
 export const Lobby = () => {
     const [socket, setSocket] = useState(null);
     const navigate = useNavigate();
+    const [search, setSearch] = useState('');
     const [room, setRoom] = useState('');
+    const [loadingGame, setLoadingGame] = useState(false);
+    const [startGameButton, setStartGameButton] = useState(false);
 
     useEffect(() => {
         setSocket(io('http://localhost:3000'));
@@ -25,7 +29,49 @@ export const Lobby = () => {
     }, [socket]);
 
     const searchRoom = () => {
-        socket.emit('search:room', { room, authorization: `Bearer ${localStorage.getItem('access_token')}` });
+        socket.emit('search:room', { search, authorization: `Bearer ${localStorage.getItem('access_token')}` });
+        socket.on('search:room', (payload) => {
+            if (payload.data !== 'notExist') {
+                Swal.fire({
+                    title: `Room ${payload.data.name} sudah tersedia, ingin join?`,
+                    showCancelButton: true,
+                    confirmButtonText: "Join",
+                    cancelButtonText: `Tidak`
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        socket.emit('join:room', { RoomId: payload.data.id, authorization: `Bearer ${localStorage.getItem('access_token')}` });
+                        socket.on("join:room", async (payload) => {
+                            if (payload.data === 'hasExist') {
+                                Swal.fire(`Anda sudah join di room ${search} sebelumnya`, "", "warning");
+                            } else {
+                                setRoom(search);
+                                Swal.fire(`Sukses join ke room ${search}`, "", "success").then(() => {
+                                    setLoadingGame(true);
+                                });
+                            }
+                        });
+
+                    }
+                });
+            } else {
+                Swal.fire({
+                    title: `Room ${search} belum ada, ingin membuat room?`,
+                    showCancelButton: true,
+                    confirmButtonText: "Buat Room",
+                    cancelButtonText: `Tidak`
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        socket.emit('create:room', { search, authorization: `Bearer ${localStorage.getItem('access_token')}` });
+                        socket.on("create:room", async (payload) => {
+                            setRoom(payload.data.name)
+                            Swal.fire(`Sukses membuat room ${search}`, "", "success").then(() => {
+                                setStartGameButton(true);
+                            });
+                        });
+                    }
+                });
+            }
+        })
     }
 
     const handleOnSubmitRoom = (e) => {
@@ -33,6 +79,23 @@ export const Lobby = () => {
 
         searchRoom();
     }
+
+    useEffect(() => {
+        console.log(room);
+    }, [room]);
+
+
+    if (loadingGame) {
+        Swal.fire({
+            title: 'Mohon tunggu game akan segera dimulai',
+            showConfirmButton: false,
+            allowOutsideClick: false,
+            willOpen: () => {
+                Swal.showLoading();
+            }
+        });
+    }
+
     return (
         <>
             <div className="h-screen w-screen flex items-center justify-center relative bg-cover " style={{ backgroundImage: 'url(https://wallpapers.com/images/hd/cartoons-animated-village-nl20v6jcsabr5swl.jpg)' }}>
@@ -104,8 +167,8 @@ export const Lobby = () => {
                                                 type="text"
                                                 className="w-5/6 rounded-3xl shadow-xl h-10 pl-4 pr-2 text-neutral-900 border-2 border-neutral-300 focus:outline-none focus:border-primary-500"
                                                 placeholder="Cari atau buat room ..."
-                                                value={room}
-                                                onChange={(e) => { setRoom(e.target.value) }}
+                                                value={search}
+                                                onChange={(e) => { setSearch(e.target.value) }}
                                             />
                                             <button
                                                 type="submit"
@@ -118,6 +181,17 @@ export const Lobby = () => {
                                         </div>
                                     </div>
                                 </form>
+
+                                {startGameButton && (
+                                    <div className="row-span-1 flex justify-center">
+                                        <button
+                                            type="submit"
+                                            className="w-1/2 bg-lime-500 shadow-xl hover:bg-lime-700 rounded-3xl h-10 ml-2 justify-center content-center items-center flex"
+                                        >
+                                            <span className="text-white font-bold">Mulai Permainan</span>
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
 

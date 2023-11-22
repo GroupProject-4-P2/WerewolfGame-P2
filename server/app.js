@@ -6,6 +6,7 @@ const { createServer } = require('http');
 const { Server } = require('socket.io');
 const RoomController = require('./controllers/RoomController');
 const { verifyToken } = require('./helper/jwt');
+const PlayerController = require('./controllers/PlayerController');
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -23,7 +24,6 @@ io.on("connection", (socket) => {
     socket.emit('hello', { message: `Your ID : ${socket.id}` });
 
     socket.use(([event, ...args], next) => {
-        console.log({ event }, { args });
         const token = verifyToken(args[0].authorization.split(' ').at(-1));
         if (!token) {
             return next(new Error("unauthorized event"));
@@ -33,7 +33,27 @@ io.on("connection", (socket) => {
     });
 
     socket.on("search:room", async (payload) => {
-        const {room, created} = await RoomController.findOrCreate({ userId: socket.token.id, room: payload.room });
+       const result = await RoomController.findRoom({ userId: socket.token.id, room: payload.search });
+       if (result) {
+        socket.emit('search:room', { data : result });
+       } else {
+        socket.emit('search:room', { data : 'notExist' });
+       }
+    });
+
+    socket.on("create:room", async (payload) => {
+       const result = await RoomController.create({ userId: socket.token.id, room: payload.search });
+       await PlayerController.create({userId: socket.token.id, roomId: result.id});
+       socket.emit('create:room', { data : result });
+    });
+
+    socket.on("join:room", async (payload) => {
+       const {newPlayer, isCreate} = await PlayerController.create({userId: socket.token.id, roomId: payload.RoomId});
+       if (isCreate) {
+           socket.emit('join:room', { data : 'success' });
+        } else {
+           socket.emit('join:room', { data : 'hasExist' });
+       }
     });
 
     socket.on("error", (err) => {
