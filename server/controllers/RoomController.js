@@ -1,23 +1,32 @@
 const { Op } = require('sequelize');
 const { Room } = require('../models');
 class RoomController {
-    static async findOrCreate(req, res, next) {
+    static async create(req, res, next) {
         try {
-            const [room, created] = await Room.findOrCreate({
+            const newRoom = await Room.create({
+                name: req.room,
+                CreatorId: req.userId,
+                status: 'active',
+            });
+
+            return newRoom;
+        } catch (error) {
+            return error;
+        }
+    }
+
+    static async findRoom(req, res, next) {
+        try {
+            const data = await Room.findOne({
                 where: {
                     [Op.and]: {
                         name: req.room,
                         status: 'active'
                     },
-                },
-                defaults: {
-                    name: req.room,
-                    CreatorId: req.userId,
-                    status: 'active',
                 }
             });
 
-            return {room, created};
+            return data;
         } catch (error) {
             return error;
         }
