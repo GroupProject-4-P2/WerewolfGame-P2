@@ -5,6 +5,8 @@ import {
 import { Login } from "../views/auth/Login";
 import { Register } from "../views/auth/Register";
 import { Lobby } from "../views/lobby/Lobby";
+import { Chat } from "../views/ingame/Chat";
+import { Vote } from "../views/ingame/Vote";
 const router = createBrowserRouter([
     {
         loader: () => {
@@ -37,6 +39,14 @@ const router = createBrowserRouter([
             {
                 path: "/",
                 element: <Lobby />,
+            },
+            {
+                path: "/chat",
+                element: <Chat />,
+            },
+            {
+                path: "/vote",
+                element: <Vote />,
             },
         ],
     },

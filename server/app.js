@@ -33,6 +33,7 @@ io.on("connection", (socket) => {
     });
 
     socket.on("search:room", async (payload) => {
+
        const result = await RoomController.findRoom({ userId: socket.token.id, room: payload.search });
        if (result) {
         socket.emit('search:room', { data : result });
@@ -54,7 +55,21 @@ io.on("connection", (socket) => {
         } else {
            socket.emit('join:room', { data : 'hasExist' });
        }
+
     });
+
+    socket.on('authenticate', (userId) => {
+        console.log(`User ${userId} authenticated`);
+        connectedUsers[userId] = socket.id;
+    });
+
+    socket.on('private message', ({ recipient, text }) => {
+        const recipientSocketId = connectedUsers[recipient];
+        if (recipientSocketId) {
+            io.to(recipientSocketId).emit('private message', { sender: socket.id, text });
+        }
+    });
+
 
     socket.on("error", (err) => {
         if (err && err.message === "unauthorized event") {
