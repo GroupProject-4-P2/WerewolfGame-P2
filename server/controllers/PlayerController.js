@@ -15,8 +15,31 @@ class PlayerController {
                     UserId: req.userId
                 }
             });
-            
-            return {newPlayer, isCreate};
+
+            return { newPlayer, isCreate };
+        } catch (error) {
+            return error;
+        }
+    }
+
+    static async findByRoomId(req, res, next) {
+        try {
+            const players = await Player.findAll({ where: { RoomId: req.roomId }})
+
+            return players;
+        } catch (error) {
+            return error;
+        }
+    }
+
+    static async findByUserId(req, res, next) {
+        try {
+            const player = await Player.findOne({
+                where: { UserId: req.userId },
+                order: [['createdAt', 'DESC']]
+            });
+
+            return player;
         } catch (error) {
             return error;
         }
