@@ -21,7 +21,9 @@ export const Lobby = () => {
         if (socket) {
             socket.on("hello", (payload) => {
                 console.log(payload);
+                socket.emit('check:user',  { authorization: `Bearer ${localStorage.getItem('access_token')}` })
             });
+
             return () => {
                 socket.disconnect()
             }
@@ -70,6 +72,18 @@ export const Lobby = () => {
                         });
                     }
                 });
+            }
+        })
+    }
+
+    const startGame = () => {
+        socket.emit('start:game', { room, authorization: `Bearer ${localStorage.getItem('access_token')}` }, room);
+        socket.on('start:game', (payload) => {
+            if(payload.isStart){
+                setLoadingGame(false);
+                Swal.close();
+            } else {
+                Swal.fire(`Pemain Kurang!`, `Pemain saat ini berjumlah ${payload.playerLength} dan belum cukup untuk memulai permainan (min. 5 player)`, "warning");
             }
         })
     }
@@ -183,13 +197,12 @@ export const Lobby = () => {
                                 </form>
 
                                 {startGameButton && (
-                                    <div className="row-span-1 flex justify-center">
-                                        <button
-                                            type="submit"
+                                    <div className="row-span-1 flex justify-center cursor-pointer">
+                                        <div onClick={startGame}
                                             className="w-1/2 bg-lime-500 shadow-xl hover:bg-lime-700 rounded-3xl h-10 ml-2 justify-center content-center items-center flex"
                                         >
                                             <span className="text-white font-bold">Mulai Permainan</span>
-                                        </button>
+                                        </div>
                                     </div>
                                 )}
                             </div>
