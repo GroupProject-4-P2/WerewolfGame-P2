@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom"
 import axios from 'axios'
+import Swal from 'sweetalert2'
 
 export const Login = () => {
     const navigate = useNavigate();
@@ -25,11 +26,15 @@ export const Login = () => {
             localStorage.setItem(`access_token`, data.access_token)
             navigate(`/`)
         } catch (error) {
-            if (error.response.data) {
-                setError(error.response.data.message)
-            } else {
-                setError(`cari errornya bro, ganbate`)
+            let errorMessage
+            if (error.response && error.response.data && error.response.data.message) {
+                errorMessage = error.response.data.message;
             }
+            Swal.fire({
+                icon: 'error',
+                title: 'Login Fail',
+                text: errorMessage,
+            });
         }
     }
 
@@ -59,38 +64,41 @@ export const Login = () => {
     }, [])
     return (
         <section id="cms-login">
-            <div className="container-login">
-                <form style={{ width: "23rem" }}>
-
-                    <h3 className="fw-normal mb-3 pb-3" style={{ letterspacing: "1px" }}>Welcome to Werewolf Game</h3>
-
-                    {error && <div className="alert alert-danger" role="alert">{error}</div>}
-                    <div className="form-outline mb-4">
-                        <label className="form-label" htmlFor="form2Example18">Email</label>
-                        <input type="email" id="form2Example18" className="form-control form-control-lg"
-                            placeholder="Your Email" value={form.email} name="email"
-                            onChange={handleInputChange} />
+            <div className="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
+                <div className="relative py-3 sm:max-w-xl sm:mx-auto">
+                    <div
+                        className="absolute inset-0 bg-gradient-to-r from-blue-300 to-blue-600 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl">
                     </div>
+                    <div className="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
+                        <div className="max-w-md mx-auto">
+                            <div>
+                                <h1 className="text-2xl font-semibold">Welcome to Werewolf Game</h1>
+                                <h4 className="text-1xl font-semibold">Please Login First!</h4>
+                            </div>
+                            <div className="divide-y divide-gray-200">
+                                <div className="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
+                                    <div className="relative">
+                                        <input id="email" name="email" type="text" className="peer placeholder-transparent h-10 w-full border-b-2 border-gray-300 text-gray-900 focus:outline-none focus:borer-rose-600" placeholder="Email address" value={form.email} onChange={handleInputChange} />
+                                        <label htmlFor="email" className="absolute left-0 -top-3.5 text-gray-600 text-sm peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-440 peer-placeholder-shown:top-2 transition-all peer-focus:-top-3.5 peer-focus:text-gray-600 peer-focus:text-sm">Email Address</label>
+                                    </div>
+                                    <div className="relative">
+                                        <input id="password" name="password" type="password" className="peer placeholder-transparent h-10 w-full border-b-2 border-gray-300 text-gray-900 focus:outline-none focus:borer-rose-600" placeholder="Password" value={form.password} onChange={handleInputChange} />
+                                        <label htmlFor="password" className="absolute left-0 -top-3.5 text-gray-600 text-sm peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-440 peer-placeholder-shown:top-2 transition-all peer-focus:-top-3.5 peer-focus:text-gray-600 peer-focus:text-sm">Password</label>
+                                    </div>
+                                    <div className="relative">
+                                        <button className="bg-blue-500 text-white rounded-md px-2 py-1" onClick={handleLogin}>Login</button>
+                                        <br /><br />
+                                        <div id="buttonDiv"></div>
 
-                    <div className="form-outline mb-4">
-                        <label className="form-label" htmlFor="form2Example28">Password</label>
-                        <input type="password" id="form2Example28" className="form-control form-control-lg"
-                            placeholder="Your Password" value={form.password} name="password"
-                            onChange={handleInputChange} />
+                                        <p className="text-center text-muted mt-5 mb-0">Don't have an account? <Link to="/register"
+                                            className="fw-bold text-body"><u>Register here</u></Link></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-
-                    <div className="pt-1 mb-4">
-                        <button className="btn btn-info btn-lg btn-block" type="button" onClick={handleLogin}>Login</button>
-                    </div>
-
-                    <div id="buttonDiv"></div>
-
-                    <p className="text-center text-muted mt-5 mb-0">Don't have an account? <Link to="/register"
-                        className="fw-bold text-body"><u>Register here</u></Link></p>
-
-                </form>
+                </div>
             </div>
-            
         </section>
     )
 }
