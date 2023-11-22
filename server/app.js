@@ -49,12 +49,14 @@ io.on("connection", (socket) => {
     });
 
     socket.on("search:room", async (payload) => {
+
         const result = await RoomController.findRoom({ userId: socket.token.id, room: payload.search });
         if (result) {
             socket.emit('search:room', { data: result });
         } else {
             socket.emit('search:room', { data: 'notExist' });
         }
+
     });
 
     socket.on("create:room", async (payload) => {
@@ -77,6 +79,7 @@ io.on("connection", (socket) => {
         if (isCreate) {
             socket.emit('join:room', { data: 'success' });
         } else {
+
             socket.emit('join:room', { data: 'hasExist' });
         }
     });
@@ -89,7 +92,16 @@ io.on("connection", (socket) => {
         } else {
             io.to(room).emit('start:game', { isStart: false, playerLength: players.length });
         }
+
     });
+
+    socket.on('private message', ({ recipient, text }) => {
+        const recipientSocketId = connectedUsers[recipient];
+        if (recipientSocketId) {
+            io.to(recipientSocketId).emit('private message', { sender: socket.id, text });
+        }
+    });
+
 
     socket.on("error", (err) => {
         if (err && err.message === "unauthorized event") {
