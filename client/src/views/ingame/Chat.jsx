@@ -1,12 +1,37 @@
-import { useState } from 'react';
-export const Chat = () => {
+import { useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
+
+export const Chat = ({ userId }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
+  const [socket, setSocket] = useState(null);
+
+  useEffect(() => {
+    const newSocket = io('http://localhost:3000')
+    setSocket(newSocket);
+
+    if (newSocket) {
+      newSocket.emit('authenticate', userId);
+    }
+
+    return () => newSocket.disconnect();
+  }, [userId]);
+
+  useEffect(() => {
+    if (socket) {
+      socket.on('private message', ({ sender, text }) => {
+        setMessages((prevMessages) => [...prevMessages, { sender, text, timestamp: new Date() }]);
+      });
+    }
+  }, [socket]);
 
   const handleSendMessage = () => {
     if (newMessage.trim() === '') return;
 
-    const updatedMessages = [...messages, { text: newMessage, timestamp: new Date() }];
+    if (socket) {
+      socket.emit('private message', { recipient: 'recipientUserId', text: newMessage }); // Ganti dengan ID pengguna yang dituju
+    }
+    const updatedMessages = [...messages, { sender: 'You', text: newMessage, timestamp: new Date() }];
     setMessages(updatedMessages);
     setNewMessage('');
   };
@@ -22,7 +47,7 @@ export const Chat = () => {
                 <div className={index % 2 === 0 ? 'bg-blue-600 text-white p-3 rounded-l-lg rounded-br-lg' : 'bg-gray-300 p-3 rounded-r-lg rounded-bl-lg'}>
                   <p className="text-sm">{message.text}</p>
                 </div>
-                <span className="text-xs text-gray-500 leading-none">2 min ago</span>
+                <span className="text-xs text-gray-500 leading-none">{message.sender}</span>
               </div>
             </div>
           ))}
@@ -39,5 +64,5 @@ export const Chat = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
