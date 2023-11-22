@@ -5,6 +5,7 @@ import {
 import { Login } from "../views/auth/Login";
 import { Register } from "../views/auth/Register";
 import { Lobby } from "../views/lobby/Lobby";
+import { Test } from "../views/tes/Test";
 const router = createBrowserRouter([
     {
         loader: () => {
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
             {
                 path: "/",
                 element: <Lobby />,
+            },
+            {
+                path: "/test",
+                element: <Test />,
             },
         ],
     },

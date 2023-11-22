@@ -34,7 +34,10 @@ class PlayerController {
 
     static async findByUserId(req, res, next) {
         try {
-            const player = await Player.findOne({ where: { UserId: req.userId }})
+            const player = await Player.findOne({
+                where: { UserId: req.userId },
+                order: [['createdAt', 'DESC']]
+            });
 
             return player;
         } catch (error) {

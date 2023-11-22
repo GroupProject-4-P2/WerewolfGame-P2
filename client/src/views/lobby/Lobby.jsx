@@ -7,6 +7,7 @@ import Swal from "sweetalert2";
 export const Lobby = () => {
     const [socket, setSocket] = useState(null);
     const navigate = useNavigate();
+    const [userProfile, setUserProfile] = useState({ name: 'User', email: '123' });
     const [search, setSearch] = useState('');
     const [room, setRoom] = useState('');
     const [loadingGame, setLoadingGame] = useState(false);
@@ -20,9 +21,50 @@ export const Lobby = () => {
     useEffect(() => {
         if (socket) {
             socket.on("hello", (payload) => {
-                console.log(payload);
-                socket.emit('check:user',  { authorization: `Bearer ${localStorage.getItem('access_token')}` })
+                console.log(payload)
+                socket.emit('check:user', { authorization: `Bearer ${localStorage.getItem('access_token')}` })
+                socket.emit('getinfo:user', { authorization: `Bearer ${localStorage.getItem('access_token')}` });
             });
+
+            socket.on('getinfo:user', (payload) => {
+                setUserProfile({ name: payload.data.name, email: payload.data.email });
+            })
+
+            socket.on('start:game', (payload) => {
+                if (payload.isStart) {
+                    let timerInterval;
+                    const secondsToCountdown = 5; 
+
+                    Swal.fire({
+                        title: "Permainan Dimulai!",
+                        html: `Selamat bermain`,
+                        timer: secondsToCountdown * 1000, 
+                        timerProgressBar: true,
+                        onBeforeOpen: () => {
+                            Swal.showLoading();
+                            const timer = Swal.getPopup().querySelector("b");
+                            timerInterval = setInterval(() => {
+                                const remainingTime = Math.ceil(Swal.getTimerLeft() / 1000);
+                                timer.textContent = `${remainingTime}`;
+                            }, 1000);
+                        },
+                        onClose: () => {
+                            clearInterval(timerInterval);
+                        }
+                    }).then((result) => {
+                        if (result.dismiss === Swal.DismissReason.timer) {
+                            navigate('/test');
+                            setLoadingGame(false);
+                            Swal.close();
+                        }
+                    });
+                } else {
+                    //startGameButton is only for the room creator
+                    if (startGameButton) {
+                        Swal.fire(`Pemain Kurang!`, `Pemain saat ini berjumlah ${payload.playerLength} dan belum cukup untuk memulai permainan (min. 5 player)`, "warning");
+                    }
+                }
+            })
 
             return () => {
                 socket.disconnect()
@@ -31,6 +73,10 @@ export const Lobby = () => {
     }, [socket]);
 
     const searchRoom = () => {
+        if (search === '') {
+            Swal.fire(`Keyword Kosong!`, "Mohon masukkan nama room!", "warning");
+            return;
+        }
         socket.emit('search:room', { search, authorization: `Bearer ${localStorage.getItem('access_token')}` });
         socket.on('search:room', (payload) => {
             if (payload.data !== 'notExist') {
@@ -45,8 +91,12 @@ export const Lobby = () => {
                         socket.on("join:room", async (payload) => {
                             if (payload.data === 'hasExist') {
                                 Swal.fire(`Anda sudah join di room ${search} sebelumnya`, "", "warning");
+                            } else if (payload.data === 'hasFull') {
+                                Swal.fire(`Room ${search} sudah full, mohon untuk mencari room lain`, "", "warning");
                             } else {
                                 setRoom(search);
+                                console.log(payload.clients1, '<<< ini sebelum join');
+                                console.log(payload.clients2, '<<< ini setelah join');
                                 Swal.fire(`Sukses join ke room ${search}`, "", "success").then(() => {
                                     setLoadingGame(true);
                                 });
@@ -66,6 +116,8 @@ export const Lobby = () => {
                         socket.emit('create:room', { search, authorization: `Bearer ${localStorage.getItem('access_token')}` });
                         socket.on("create:room", async (payload) => {
                             setRoom(payload.data.name)
+                            console.log(payload.clients1, '<<< ini sebelum create');
+                            console.log(payload.clients2, '<<< ini setelah create');
                             Swal.fire(`Sukses membuat room ${search}`, "", "success").then(() => {
                                 setStartGameButton(true);
                             });
@@ -78,14 +130,7 @@ export const Lobby = () => {
 
     const startGame = () => {
         socket.emit('start:game', { room, authorization: `Bearer ${localStorage.getItem('access_token')}` }, room);
-        socket.on('start:game', (payload) => {
-            if(payload.isStart){
-                setLoadingGame(false);
-                Swal.close();
-            } else {
-                Swal.fire(`Pemain Kurang!`, `Pemain saat ini berjumlah ${payload.playerLength} dan belum cukup untuk memulai permainan (min. 5 player)`, "warning");
-            }
-        })
+
     }
 
     const handleOnSubmitRoom = (e) => {
@@ -129,10 +174,10 @@ export const Lobby = () => {
                                 <div className="row-span-2 rounded-2xl flex items-center justify-center mt-2">
                                     <div className="flex flex-col h-full content-center">
                                         <div className="rounded-2xl flex justify-center h-6">
-                                            <div className="font-bold text-white">Rafi Wicaksono</div>
+                                            <div className="font-bold text-white">{userProfile.name}</div>
                                         </div>
                                         <div className=" rounded-2xl flex justify-center h-6">
-                                            <div className="text-sm text-white font-light">rafiwicaksono@mail.com</div>
+                                            <div className="text-sm text-white font-light">{userProfile.email}</div>
                                         </div>
                                         <div className="flex flex-row h-full content-center justify-center gap-4 my-3 bg-slate-50 pt-1 rounded-xl">
                                             <div className=" rounded-full flex justify-center h-6">
