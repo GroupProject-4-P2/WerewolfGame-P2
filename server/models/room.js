@@ -12,12 +12,13 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Room.hasMany(models.Vote)
       Room.hasMany(models.Player)
-      Room.belongsTo(models.User)
+      Room.belongsTo(models.User, {foreignKey: 'CreatorId'});
     }
   }
   Room.init({
     CreatorId: DataTypes.INTEGER,
-    name: DataTypes.STRING
+    name: DataTypes.STRING,
+    status: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'Room',

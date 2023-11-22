@@ -10,7 +10,7 @@ const router = createBrowserRouter([
         loader: () => {
             const access_token = localStorage.getItem(`access_token`)
             if (access_token) {
-                throw redirect(`/loby`)
+                throw redirect(`/`)
             }
             return null
         },

@@ -1,17 +1,38 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom"
 import axios from 'axios'
+import { io } from "socket.io-client";
 
 export const Lobby = () => {
+    const [socket, setSocket] = useState(null);
     const navigate = useNavigate();
-    const [form, setForm] = useState({
-        email: ``,
-        password: ``
-    });
+    const [room, setRoom] = useState('');
 
     useEffect(() => {
-       
-    }, [])
+        setSocket(io('http://localhost:3000'));
+        console.log('Koneksi dengan server', socket);
+    }, []);
+
+    useEffect(() => {
+        if (socket) {
+            socket.on("hello", (payload) => {
+                console.log(payload);
+            });
+            return () => {
+                socket.disconnect()
+            }
+        }
+    }, [socket]);
+
+    const searchRoom = () => {
+        socket.emit('search:room', { room, authorization: `Bearer ${localStorage.getItem('access_token')}` });
+    }
+
+    const handleOnSubmitRoom = (e) => {
+        e.preventDefault();
+
+        searchRoom();
+    }
     return (
         <>
             <div className="h-screen w-screen flex items-center justify-center relative bg-cover " style={{ backgroundImage: 'url(https://wallpapers.com/images/hd/cartoons-animated-village-nl20v6jcsabr5swl.jpg)' }}>
@@ -76,13 +97,15 @@ export const Lobby = () => {
                                         <div className="mb-6 text-white">Play with your friends!</div>
                                     </div>
                                 </div>
-                                <form>
+                                <form onSubmit={handleOnSubmitRoom}>
                                     <div className="row-span-1 rounded-2xl flex items-center justify-center ">
                                         <div className="flex flex-row h-full w-full content-center">
                                             <input
                                                 type="text"
                                                 className="w-5/6 rounded-3xl shadow-xl h-10 pl-4 pr-2 text-neutral-900 border-2 border-neutral-300 focus:outline-none focus:border-primary-500"
                                                 placeholder="Cari atau buat room ..."
+                                                value={room}
+                                                onChange={(e) => { setRoom(e.target.value) }}
                                             />
                                             <button
                                                 type="submit"
