@@ -24,7 +24,7 @@ export const Login = () => {
         try {
             const { data } = await axios.post(`http://localhost:3000/login`, form)
             localStorage.setItem(`access_token`, data.access_token)
-            navigate(`/loby`)
+            navigate(`/`)
         } catch (error) {
             let errorMessage
             if (error.response && error.response.data && error.response.data.message) {
@@ -46,7 +46,7 @@ export const Login = () => {
                 }
             })
             localStorage.setItem(`access_token`, data.access_token)
-            navigate(`/loby`)
+            navigate(`/`)
         } catch (error) {
             console.log(error)
         }
