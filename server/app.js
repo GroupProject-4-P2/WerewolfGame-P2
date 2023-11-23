@@ -8,6 +8,7 @@ const RoomController = require('./controllers/RoomController');
 const { verifyToken } = require('./helper/jwt');
 const PlayerController = require('./controllers/PlayerController');
 const UserController = require('./controllers/UserController');
+const VoteController = require('./controllers/VoteController');
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -23,7 +24,6 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
     socket.emit('hello', { message: `Your ID : ${socket.id}` });
     socket.on('check:user', async ({ authorization }) => {
-        console.log({authorization});
         const token = verifyToken(authorization.split(' ').at(-1));
         const player = await PlayerController.findByUserId({ userId: token.id });
         if (player) {
@@ -108,15 +108,57 @@ io.on("connection", (socket) => {
 
 
     socket.on('fetch:player', async ({ RoomId }) => {
-        console.log(RoomId);
         try {
-            const test = await PlayerController.getRecentPlayer({ roomId: RoomId });
-            console.log(test);
+            await PlayerController.getRecentPlayer({ roomId: RoomId });
         } catch (error) {
             next(error);
         }
     });
 
+  
+
+    socket.on('assign:role', async ({ RoomId }) => {
+        try {
+            const assign = await PlayerController.assignRole({ roomId: RoomId });
+        
+        } catch (error) {
+            console.log(error);
+        }
+    });
+
+    socket.on('get:myRole', async ({ RoomId }) => {
+        try {
+            const data = await PlayerController.getMyRole({ roomId: RoomId, userId: socket.token.id });
+            // const result = await RoomController.findRoomByPk({ roomId: RoomId });
+            // io.to(result.name).emit('get:myRole', { data});
+            socket.emit('get:myRole', { role : data.Role.name });
+        } catch (error) {
+            console.log(error);
+        }
+    });
+
+    socket.on('getRecent:Player', async ({ RoomId }) => {
+        try {
+            const data = await PlayerController.recentPlayer({ roomId: RoomId, userId: socket.token.id });
+            socket.emit('getRecent:Player', { data });
+        } catch (error) {
+            console.log(error);
+        }
+    });
+
+    socket.on('choose:target', async ({ RoomId, TargetId }) => {
+        try {
+            console.log(RoomId, TargetId)
+            await VoteController.create({ roomId: RoomId, userId: socket.token.id, targetId: TargetId });
+            // socket.emit('getRecent:Player', { data });
+        } catch (error) {
+            console.log(error);
+        }
+    });
+
+    socket.on('disconnect', () => {
+        socket.disconnect();
+    })
     socket.on("error", (err) => {
         if (err && err.message === "unauthorized event") {
             socket.disconnect();
