@@ -1,33 +1,66 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 import { io } from 'socket.io-client';
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
+import Swal from 'sweetalert2';
+import socketContext from '../../socketContext';
 
 export const Chat = ({ userId }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const [socket, setSocket] = useState(null);
+  // const [socket, setSocket] = useState(null);
   const [roomId, setRoomId] = useState(localStorage.getItem('RoomId'));
-
+  const [isCreator, setIsCreator] = useState(localStorage.getItem('isCreator'));
+  const [myRole, setMyRole] = useState('');
   const [round, setRound] = useState(1);
+  const [session, setSession] = useState(1);
+  const [isStart, setIsStart] = useState(false);
   const [key, setKey] = useState(0);
   const [turn, setTurn] = useState('night');
   const [isVote, setIsVote] = useState(true);
+  const [recentPlayers, setrecentPlayers] = useState([]);
+  const [userProfile, setUserProfile] = useState({ name: 'User', email: '123' });
+  const { socket } = useContext(socketContext);
 
   useEffect(() => {
-    const newSocket = io('http://localhost:3000')
-    setSocket(newSocket);
 
-    if (newSocket) {
-      newSocket.emit('authenticate', userId);
+    if (localStorage.getItem('isCreator')) {
+      socket.emit('assign:role', { authorization: `Bearer ${localStorage.getItem('access_token')}`, RoomId: roomId });
     }
+    socket.emit('get:myRole', { authorization: `Bearer ${localStorage.getItem('access_token')}`, RoomId: roomId });
+    socket.emit('getinfo:user', { authorization: `Bearer ${localStorage.getItem('access_token')}` });
+    socket.emit('getRecent:Player', { authorization: `Bearer ${localStorage.getItem('access_token')}`, RoomId: roomId });
+  }, []);
 
-    return () => newSocket.disconnect();
+
+  useEffect(() => {
+
+
+    if (socket) {
+      socket.emit('authenticate', userId);
+    }
   }, [userId]);
+
+  useEffect(() => {
+    socket.on('getRecent:Player', ({ data }) => {
+      setrecentPlayers(data);
+      console.log(data)
+    });
+  }, [isStart])
 
   useEffect(() => {
     if (socket) {
       socket.on('private message', ({ sender, text }) => {
         setMessages((prevMessages) => [...prevMessages, { sender, text, timestamp: new Date() }]);
+      });
+
+      socket.on('getinfo:user', (payload) => {
+        setUserProfile({ name: payload.data.name, email: payload.data.email });
+      });
+
+      socket.on('get:myRole', (payload) => {
+        setMyRole(payload.role);
+        localStorage.setItem('role', payload.role);
+        // setUserProfile({ name: payload.data.name, email: payload.data.email });
       });
     }
   }, [socket]);
@@ -36,7 +69,7 @@ export const Chat = ({ userId }) => {
     if (newMessage.trim() === '') return;
 
     if (socket) {
-      socket.emit('private message', { recipient: 'recipientUserId', text: newMessage }); // Ganti dengan ID pengguna yang dituju
+      socket.emit('private message', { recipient: 'recipientUserId', text: newMessage });
     }
     const updatedMessages = [...messages, { sender: 'You', text: newMessage, timestamp: new Date() }];
     setMessages(updatedMessages);
@@ -44,7 +77,6 @@ export const Chat = ({ userId }) => {
   };
 
   const changeStage = () => {
-    // Logika yang dijalankan setelah waktu hitung mundur selesai
     if (turn === 'night') {
       setTurn('morning');
       setRound((prevRound) => prevRound + 1);
@@ -73,30 +105,40 @@ export const Chat = ({ userId }) => {
 
   const fetchPlayer = () => {
     console.log('tes')
-    socket.emit('fetch:player', { authorization: `Bearer ${localStorage.getItem('access_token')}`, RoomId: roomId  });
+    console.log(isCreator);
+    // socket.emit('get:myRole', { authorization: `Bearer ${localStorage.getItem('access_token')}`, RoomId: roomId });
+    // socket.emit('fetch:player', { authorization: `Bearer ${localStorage.getItem('access_token')}`, RoomId: roomId });
+  }
+
+  const postTarget = (TargetId) => {
+    console.log(TargetId);
+    socket.emit('choose:target', { authorization: `Bearer ${localStorage.getItem('access_token')}`, TargetId, RoomId: roomId });
   }
 
   useEffect(() => {
     // setKey((prevKey) => prevKey + 1);
   }, [round]);
 
+
+
   return (
-    <div className="grid grid-flow-row-dense grid-cols-4 grid-rows-3 h-screen w-screen">
-      <div className="col-span-1 row-span-3 justify-center items-center flex">
+    <div className="grid grid-flow-row-dense grid-cols-4 grid-rows-3 h-screen w-screen bg-cover" style={{ backgroundImage: 'url(https://wallpapers.com/images/hd/cartoons-animated-village-nl20v6jcsabr5swl.jpg)' }}>
+      <div className="absolute inset-0 bg-black opacity-50"></div>
+      <div className="col-span-1 row-span-3 justify-center items-center flex z-10">
 
 
-        <div className='flex h-5/6 w-5/6 bg-red-300 rounded-xl'>
+        <div className='flex h-5/6 w-5/6 bg-indigo-500 rounded-xl'>
           <div className='flex flex-col h-full w-full'>
             <div className='flex w-full h-20 justify-center items-center mt-4'>
               <img src="https://static.vecteezy.com/system/resources/previews/011/490/381/original/happy-smiling-young-man-avatar-3d-portrait-of-a-man-cartoon-character-people-illustration-isolated-on-white-background-vector.jpg" className='w-20 h-20 rounded-full' alt="" srcSet="" />
             </div>
             <div className='flex w-full pt-3 justify-center items-center '>
-              <span className='font-semibold'>Arvi Naufal</span>
+              <span className='font-semibold'>{userProfile.name}</span>
             </div>
             <div className='flex w-full h-auto justify-center'>
-              <span className='italic'>Warewolf</span>
+              <span className='italic'>{myRole}</span>
             </div>
-            <div className='flex w-auto h-auto justify-center mt-4 py-2 rounded-xl bg-sky-500'>
+            <div className='flex w-auto h-auto justify-center mt-4 py-2 rounded-xl bg-indigo-800 '>
 
               <CountdownCircleTimer
                 key={key}
@@ -110,11 +152,20 @@ export const Chat = ({ userId }) => {
                 {renderTime}
               </CountdownCircleTimer>
             </div>
-            <div className='flex w-auto h-auto justify-center items-center mt-2'>
-              <div className='bg-orange-700 rounded-xl cursor-pointer h-8 w-1/2 flex items-center justify-center' onClick={fetchPlayer}>
-                <span className='text-center text-white'>Fetch</span>
+
+            {isCreator && (
+              <div className='flex w-auto h-auto justify-center items-center mt-2'>
+                <div
+                  className='bg-orange-700 rounded-xl cursor-pointer h-8 w-1/2 flex items-center justify-center'
+                  onClick={fetchPlayer}
+                >
+                  <span className='text-center text-white'>Fetch</span>
+                </div>
               </div>
-            </div>
+            )
+            }
+
+
 
 
 
@@ -124,10 +175,17 @@ export const Chat = ({ userId }) => {
 
             </div>
             <div className="grid grid-cols-2 gap-4 mx-4 mt-4">
-              <button className="bg-blue-500 hover:bg-blue-700 rounded-xl cursor-pointer h-8 w-full text-white">Player 1</button>
-              <button className="bg-blue-500 hover:bg-blue-700 rounded-xl cursor-pointer h-8 w-full text-white">Player 2</button>
-              <button className="bg-blue-500 hover:bg-blue-700 rounded-xl cursor-pointer h-8 w-full text-white">Player 3</button>
-              <button className="bg-blue-500 hover:bg-blue-700 rounded-xl cursor-pointer h-8 w-full text-white">Player 4</button>
+
+              {
+                recentPlayers.length > 0 ? (
+                  recentPlayers.map((el) => (
+
+                    <button key={el.id} className="bg-blue-400 hover:bg-blue-700 rounded-xl cursor-pointer h-8 w-full text-white" onClick={() => { postTarget(el.id) }}>{el.User.name}</button>
+                  ))
+                ) : (
+                  <h1 className="col-span-8 text-center">Anda sudah memilih</h1>
+                )
+              }
             </div>
 
           </div>
@@ -137,7 +195,7 @@ export const Chat = ({ userId }) => {
 
       </div>
 
-      <div class="col-span-3 row-span-3 justify-center items-center flex">
+      <div className="col-span-3 row-span-3 justify-center items-center flex">
 
         <div className='flex h-5/6 w-5/6 bg-lime-300 rounded-xl'>
 
