@@ -2,9 +2,14 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom"
 import axios from 'axios'
 import Swal from 'sweetalert2'
+import { useDispatch, useSelector } from 'react-redux';
+import { setUser } from "../../features/user/userSlice";
+
 
 export const Login = () => {
+    const dispatch = useDispatch();
     const navigate = useNavigate();
+    const user = useSelector((state) => state.user);
 
     const [form, setForm] = useState({
         email: ``,
@@ -18,25 +23,24 @@ export const Login = () => {
         });
     };
 
-    const [error, setError] = useState("")
-
     const handleLogin = async () => {
         try {
-            const { data } = await axios.post(`http://localhost:3000/login`, form)
-            localStorage.setItem(`access_token`, data.access_token)
-            navigate(`/`)
+          const { data } = await axios.post(`http://localhost:3000/login`, form);
+          dispatch(setUser(data));
+          localStorage.setItem('access_token', data.access_token);
+          navigate('/');
         } catch (error) {
-            let errorMessage
-            if (error.response && error.response.data && error.response.data.message) {
-                errorMessage = error.response.data.message;
-            }
-            Swal.fire({
-                icon: 'error',
-                title: 'Login Fail',
-                text: errorMessage,
-            });
+          let errorMessage;
+          if (error.response && error.response.data && error.response.data.message) {
+            errorMessage = error.response.data.message;
+          }
+          Swal.fire({
+            icon: 'error',
+            title: 'Login Fail',
+            text: errorMessage,
+          });
         }
-    }
+      };
 
     async function handleCredentialResponse(response) {
         try {
