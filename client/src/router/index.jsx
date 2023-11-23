@@ -10,6 +10,7 @@ import { Test } from "../views/tes/Test";
 
 import { Chat } from "../views/ingame/Chat";
 import { Vote } from "../views/ingame/Vote";
+import { ChatRoom } from "../views/ingame/ChatRoom";
 
 const router = createBrowserRouter([
     {
@@ -67,6 +68,10 @@ const router = createBrowserRouter([
             {
                 path: "/chat",
                 element: <Chat />,
+            },
+            {
+                path: "/room",
+                element: <ChatRoom />,
             },
         ],
     },
