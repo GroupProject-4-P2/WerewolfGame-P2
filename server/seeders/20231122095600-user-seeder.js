@@ -50,6 +50,20 @@ module.exports = {
         updatedAt: date,
       },
     ], {});
+
+
+    await queryInterface.bulkInsert('Roles', [
+      {
+        name: 'Werewolf',
+        createdAt: date,
+        updatedAt: date,
+      },
+      {
+        name: 'Villager',
+        createdAt: date,
+        updatedAt: date,
+      }
+    ])
     /**
      * Add seed commands here.
      *
@@ -63,6 +77,11 @@ module.exports = {
 
   async down(queryInterface, Sequelize) {
     await queryInterface.bulkDelete('Users', null, {
+      truncate: true,
+      cascade: true,
+      restartIdentity: true
+    });
+    await queryInterface.bulkDelete('Roles', null, {
       truncate: true,
       cascade: true,
       restartIdentity: true

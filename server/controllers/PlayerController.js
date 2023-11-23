@@ -1,5 +1,5 @@
 const { Op, Sequelize } = require('sequelize');
-const { Room, Player, Vote, User, sequelize } = require('../models');
+const { Room, Player, Vote, User, sequelize, Role } = require('../models');
 class PlayerController {
     static async create(req, res, next) {
         try {
@@ -46,6 +46,60 @@ class PlayerController {
     }
 
 
+    static async assignRole(req, res, next) {
+        try {
+            const check = await Player.findOne({
+                where: {
+                    RoomId: req.roomId,
+                    RoleId: 1
+                }
+            });
+            if (check) {
+                return `alreadyExist`;
+            }
+            let playerIds = await Player.findAll({ where: { RoomId: req.roomId } });
+            playerIds = playerIds.map(el => {
+                return el.id;
+            })
+
+            await Player.update({ RoleId: 1 }, { where: { RoomId: req.roomId, id: playerIds[3] } });
+            await Player.update({ RoleId: 2 }, { where: { RoomId: req.roomId, RoleId: null, id: { [Op.ne]: playerIds[3] } } });
+
+            return 'success';
+        } catch (error) {
+            return error;
+        }
+    }
+
+
+    static async getMyRole(req, res, next) {
+        try {
+            const myRole = await Player.findOne({
+                where: {
+                    RoomId: req.roomId,
+                    UserId: req.userId
+                },
+                include: {
+                    model: Role
+                }
+            });
+
+
+            return myRole;
+        } catch (error) {
+            return error;
+        }
+    }
+
+    static async recentPlayer(req, res, next) {
+        try {
+            let recentPlayers = await Player.findAll({ where: { RoomId: req.roomId, UserId: { [Op.ne]: req.userId }, status: null }, include: { model: User } });
+            return recentPlayers;
+        } catch (error) {
+            return error;
+        }
+    }
+
     static async getRecentPlayer(req, res, next) {
         try {
             console.log(Math.random());
@@ -78,12 +132,12 @@ class PlayerController {
                     frekuensi DESC
                 LIMIT ${limit};
             `;
-            
+
             let playerIdTerbanyak = await sequelize.query(query, {
                 replacements: { roomId },
                 type: sequelize.QueryTypes.SELECT,
             });
-            
+
             playerIdTerbanyak = playerIdTerbanyak.map(el => {
                 return el.TargetPlayerIdTerbanyak;
             });
@@ -118,6 +172,8 @@ class PlayerController {
             return error;
         }
     }
+
+
 
 }
 
