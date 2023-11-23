@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom"
 import axios from 'axios'
 import { io } from "socket.io-client";
 import Swal from "sweetalert2";
+import socketContext from "../../socketContext";
 
 export const Lobby = () => {
-    const [socket, setSocket] = useState(null);
+    //const [socket, setSocket] = useState(null);
+    const {socket} = useContext(socketContext);
     const navigate = useNavigate();
     const [userProfile, setUserProfile] = useState({ name: 'User', email: '123' });
     const [search, setSearch] = useState('');
@@ -14,24 +16,27 @@ export const Lobby = () => {
     const [startGameButton, setStartGameButton] = useState(false);
 
     useEffect(() => {
-        setSocket(io('http://localhost:3000'));
+        //setSocket(io('http://localhost:3000'));
         console.log('Koneksi dengan server', socket);
+        socket.emit('getinfo:user', { authorization: `Bearer ${localStorage.getItem('access_token')}` });
     }, []);
 
+  
+
     useEffect(() => {
-        if (socket) {
+        // if (socket) {
             socket.on("hello", (payload) => {
                 console.log(payload)
                 socket.emit('check:user', { authorization: `Bearer ${localStorage.getItem('access_token')}` })
-                socket.emit('getinfo:user', { authorization: `Bearer ${localStorage.getItem('access_token')}` });
             });
 
             socket.on('getinfo:user', (payload) => {
+           
                 setUserProfile({ name: payload.data.name, email: payload.data.email });
-            })
+            });
 
             socket.on('start:game', (payload) => {
-                console.log(payload);
+           
                 if (payload.isStart) {
                     let timerInterval;
                     const secondsToCountdown = 5; 
@@ -43,6 +48,7 @@ export const Lobby = () => {
                         html: `Selamat bermain`,
                         timer: secondsToCountdown * 1000, 
                         timerProgressBar: true,
+                        showConfirmButton: false,
                         onBeforeOpen: () => {
                             Swal.showLoading();
                             const timer = Swal.getPopup().querySelector("b");
@@ -69,10 +75,10 @@ export const Lobby = () => {
                 }
             })
 
-            return () => {
-                socket.disconnect()
-            }
-        }
+            // return () => {
+            //     socket.disconnect()
+            // }
+        // }
     }, [socket]);
 
     const searchRoom = () => {
@@ -98,8 +104,7 @@ export const Lobby = () => {
                                 Swal.fire(`Room ${search} sudah full, mohon untuk mencari room lain`, "", "warning");
                             } else {
                                 setRoom(search);
-                                console.log(payload.clients1, '<<< ini sebelum join');
-                                console.log(payload.clients2, '<<< ini setelah join');
+                                localStorage.setItem('isCreator', false);
                                 Swal.fire(`Sukses join ke room ${search}`, "", "success").then(() => {
                                     setLoadingGame(true);
                                 });
@@ -118,9 +123,8 @@ export const Lobby = () => {
                     if (result.isConfirmed) {
                         socket.emit('create:room', { search, authorization: `Bearer ${localStorage.getItem('access_token')}` });
                         socket.on("create:room", async (payload) => {
-                            setRoom(payload.data.name)
-                            console.log(payload.clients1, '<<< ini sebelum create');
-                            console.log(payload.clients2, '<<< ini setelah create');
+                            setRoom(payload.data.name);
+                            localStorage.setItem('isCreator', true);
                             Swal.fire(`Sukses membuat room ${search}`, "", "success").then(() => {
                                 setStartGameButton(true);
                             });

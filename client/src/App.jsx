@@ -1,8 +1,11 @@
 import { RouterProvider } from "react-router-dom";
 import router from "./router";
+import { SocketProvider } from "./socketContext";
 
 function App() {
-  return <RouterProvider router={router} />
+  return <SocketProvider>
+    <RouterProvider router={router} />
+  </SocketProvider>
 }
 
 export default App
