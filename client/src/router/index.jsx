@@ -49,13 +49,24 @@ const router = createBrowserRouter([
                 path: "/test",
                 element: <Test />,
             },
+            // {
+            //     path: "/vote",
+            //     element: <Vote />,
+            // },
+        ],
+    },
+    {
+        loader: () => {
+            const RoomId = localStorage.getItem(`RoomId`)
+            if (!RoomId) {
+                throw redirect(`/login`)
+            }
+            return null
+        },
+        children: [
             {
                 path: "/chat",
                 element: <Chat />,
-            },
-            {
-                path: "/vote",
-                element: <Vote />,
             },
         ],
     },

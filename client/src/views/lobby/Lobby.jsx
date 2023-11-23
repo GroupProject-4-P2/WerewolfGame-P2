@@ -31,10 +31,13 @@ export const Lobby = () => {
             })
 
             socket.on('start:game', (payload) => {
+                console.log(payload);
                 if (payload.isStart) {
                     let timerInterval;
                     const secondsToCountdown = 5; 
 
+                    localStorage.setItem('RoomId', payload.RoomId);
+                    
                     Swal.fire({
                         title: "Permainan Dimulai!",
                         html: `Selamat bermain`,
@@ -53,7 +56,7 @@ export const Lobby = () => {
                         }
                     }).then((result) => {
                         if (result.dismiss === Swal.DismissReason.timer) {
-                            navigate('/test');
+                            navigate('/chat');
                             setLoadingGame(false);
                             Swal.close();
                         }
@@ -155,6 +158,12 @@ export const Lobby = () => {
         });
     }
 
+
+    const logout = () => {
+        localStorage.clear();
+        navigate('/login');
+    }
+
     return (
         <>
             <div className="h-screen w-screen flex items-center justify-center relative bg-cover " style={{ backgroundImage: 'url(https://wallpapers.com/images/hd/cartoons-animated-village-nl20v6jcsabr5swl.jpg)' }}>
@@ -179,13 +188,14 @@ export const Lobby = () => {
                                         <div className=" rounded-2xl flex justify-center h-6">
                                             <div className="text-sm text-white font-light">{userProfile.email}</div>
                                         </div>
-                                        <div className="flex flex-row h-full content-center justify-center gap-4 my-3 bg-slate-50 pt-1 rounded-xl">
-                                            <div className=" rounded-full flex justify-center h-6">
+                                        <div className="flex flex-row h-full content-center justify-center my-3 px-3 cursor-pointer bg-red-700 hover:bg-red-800 pt-1 rounded-xl" onClick={logout}>
+                                            <span className="text-white font-semibold">Logout</span>
+                                            {/* <div className=" rounded-full flex justify-center h-6">
                                                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Facebook_f_logo_%282019%29.svg/2048px-Facebook_f_logo_%282019%29.svg.png" alt="" srcSet="" className="shadow-2xl" />
                                             </div>
                                             <div className=" rounded-full flex justify-center h-6">
                                                 <img src="https://cdn-icons-png.flaticon.com/512/25/25231.png" alt="" srcSet="" className="shadow-2xl" />
-                                            </div>
+                                            </div> */}
 
                                         </div>
 

@@ -10,10 +10,11 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      Player.hasMany(models.Vote)
-      Player.belongsTo(models.Room)
-      Player.belongsTo(models.Role)
-      Player.belongsTo(models.User)
+      Player.hasMany(models.Vote, { foreignKey: 'TargetPlayerId', as: 'TargetPlayer' })
+      Player.hasMany(models.Vote, { foreignKey: 'SourcePlayerId', as: 'SourcePlayer' })
+      Player.belongsTo(models.Room, { foreignKey: 'RoomId' })
+      Player.belongsTo(models.Role, { foreignKey: 'RoleId' })
+      Player.belongsTo(models.User, { foreignKey: 'UserId' })
     }
   }
   Player.init({

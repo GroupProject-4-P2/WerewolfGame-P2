@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       User.hasMany(models.Room, {foreignKey: 'CreatorId'});
-      User.hasMany(models.Player)
+      User.hasMany(models.Player, {foreignKey: 'UserId'});
     }
   }
   User.init({
