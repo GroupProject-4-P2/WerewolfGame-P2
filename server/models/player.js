@@ -20,7 +20,8 @@ module.exports = (sequelize, DataTypes) => {
   Player.init({
     RoomId: DataTypes.INTEGER,
     RoleId: DataTypes.INTEGER,
-    UserId: DataTypes.INTEGER
+    UserId: DataTypes.INTEGER,
+    status: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'Player',
