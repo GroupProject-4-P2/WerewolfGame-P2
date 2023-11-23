@@ -12,6 +12,7 @@ export const Lobby = () => {
     const [room, setRoom] = useState('');
     const [loadingGame, setLoadingGame] = useState(false);
     const [startGameButton, setStartGameButton] = useState(false);
+ 
 
     useEffect(() => {
         setSocket(io('http://localhost:3000'));
@@ -195,7 +196,9 @@ export const Lobby = () => {
                                             </div>
                                             <div className=" rounded-full flex justify-center h-6">
                                                 <img src="https://cdn-icons-png.flaticon.com/512/25/25231.png" alt="" srcSet="" className="shadow-2xl" />
+
                                             </div> */}
+
 
                                         </div>
 
