@@ -31,6 +31,16 @@ class RoomController {
             return error;
         }
     }
+
+    static async findRoomByPk(req, res, next) {
+        try {
+            const data = await Room.findByPk(req.roomId);
+
+            return data;
+        } catch (error) {
+            return error;
+        }
+    }
 }
 
 module.exports = RoomController;

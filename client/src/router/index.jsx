@@ -5,8 +5,12 @@ import {
 import { Login } from "../views/auth/Login";
 import { Register } from "../views/auth/Register";
 import { Lobby } from "../views/lobby/Lobby";
+
+import { Test } from "../views/tes/Test";
+
 import { Chat } from "../views/ingame/Chat";
 import { Vote } from "../views/ingame/Vote";
+
 const router = createBrowserRouter([
     {
         loader: () => {
@@ -41,12 +45,28 @@ const router = createBrowserRouter([
                 element: <Lobby />,
             },
             {
+
+                path: "/test",
+                element: <Test />,
+            },
+            // {
+            //     path: "/vote",
+            //     element: <Vote />,
+            // },
+        ],
+    },
+    {
+        loader: () => {
+            const RoomId = localStorage.getItem(`RoomId`)
+            if (!RoomId) {
+                throw redirect(`/login`)
+            }
+            return null
+        },
+        children: [
+            {
                 path: "/chat",
                 element: <Chat />,
-            },
-            {
-                path: "/vote",
-                element: <Vote />,
             },
         ],
     },
